@@ -5,9 +5,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import ru.kata.spring.boot_security.demo.models.Role;
 import ru.kata.spring.boot_security.demo.models.User;
-import ru.kata.spring.boot_security.demo.repositories.UserRepositoryImpl;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import ru.kata.spring.boot_security.demo.repositories.UserRepository;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -16,9 +16,9 @@ import java.util.Set;
 public class DatabaseInitializer implements CommandLineRunner {
     @PersistenceContext
     private EntityManager entityManager;
-    private final UserRepositoryImpl userRepository;
+    private final UserRepository userRepository;
     
-    public DatabaseInitializer(UserRepositoryImpl userRepository) {
+    public DatabaseInitializer(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
     

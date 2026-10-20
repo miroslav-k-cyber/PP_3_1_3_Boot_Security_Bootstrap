@@ -9,6 +9,7 @@ import java.util.List;
 
 @Service
 public class RoleServiceImpl implements RoleService {
+    
     private final RoleRepository roleRepository;
     
     public RoleServiceImpl(RoleRepository roleRepository) {
@@ -18,6 +19,12 @@ public class RoleServiceImpl implements RoleService {
     @Override
     @Transactional(readOnly = true)
     public List<Role> findRolesByIds(List<Long> roleIds) {
-        return roleRepository.findRolesByIds(roleIds);
+        return roleRepository.findAllById(roleIds); // Используем стандартный метод
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<Role> getAllRoles() {
+        return roleRepository.findAll();
     }
 }

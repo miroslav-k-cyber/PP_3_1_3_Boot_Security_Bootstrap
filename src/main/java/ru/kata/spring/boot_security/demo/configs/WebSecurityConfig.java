@@ -24,29 +24,42 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                // 1. Настраиваем патрули на URL (Пункты 4 и 5 ТЗ)
+                // 1. Отключаем CSRF для фоновых запросов
+                .csrf(csrf -> csrf.disable())
+                
+                // 2. Настраиваем патрули на URL
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/admin/**").hasRole("ADMIN") // Админка только для ADMIN
-                        .requestMatchers("/user").hasAnyRole("USER", "ADMIN") // Страница юзера для USER и ADMIN
-                        .requestMatchers("/", "/index").permitAll() // Главная открыта всем
-                        .anyRequest().authenticated() // Всё остальное требует логина
+                        // РАЗРЕШАЕМ ВСЕ СТАТИЧЕСКИЕ РЕСУРСЫ (CSS, JS, Webjars, Картинки)
+                        .requestMatchers(org.springframework.boot.autoconfigure.security.servlet.PathRequest.toStaticResources().atCommonLocations()).permitAll()
+                        .requestMatchers("/static/static/**", "/css/**", "/webjars/**").permitAll()
+                        .requestMatchers("/", "/index").permitAll()
+                        
+                        // Правила для REST-контроллеров бэкенда
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/user").hasAnyRole("USER", "ADMIN")
+                        
+                        // Правила для HTML-страниц
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/user").hasAnyRole("USER", "ADMIN")
+                        
+                        .anyRequest().authenticated()
                 )
-                // 2. Настраиваем форму логина и редирект (Пункт 7 ТЗ)
+                // 3. Форма логина
                 .formLogin(form -> form
-                        .usernameParameter("username") // Фикс: явно связываем стандартное поле формы с обработчиком
-                        .successHandler(successUserHandler) // Наш хэндлер перенаправления
+                        .usernameParameter("username")
+                        .successHandler(successUserHandler)
                         .permitAll()
                 )
-                // 3. Настраиваем выход из аккаунта (Пункт 6 ТЗ)
+                // 4. Логаут
                 .logout(logout -> logout
                         .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login") // Куда отправить после выхода
+                        .logoutSuccessUrl("/login")
                         .permitAll()
                 )
                 .authenticationProvider(daoAuthenticationProvider(userDetailsService))
-                // 4. Финальная сборка всей цепочки фильтров
                 .build();
     }
+    
     
     // 2 (Провайдер базы данных)
     @Bean

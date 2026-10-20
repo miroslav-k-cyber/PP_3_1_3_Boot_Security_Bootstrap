@@ -1,5 +1,6 @@
 package ru.kata.spring.boot_security.demo.services;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.kata.spring.boot_security.demo.models.Role;
@@ -13,10 +14,12 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleService roleService; // Общаемся с ролями только через их сервис
+    private final PasswordEncoder passwordEncoder;
     
-    public UserServiceImpl(UserRepository userRepository, RoleService roleService) {
+    public UserServiceImpl(UserRepository userRepository, RoleService roleService, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleService = roleService;
+        this.passwordEncoder = passwordEncoder;
     }
     
     @Override
@@ -34,6 +37,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void saveUser(User user, List<Long> roleIds) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         if (roleIds != null && !roleIds.isEmpty()) {
             List<Role> roles = roleService.findRolesByIds(roleIds);
             user.setRoles(new HashSet<>(roles)); // Привязываем сет ролей внутри метода слоя User
@@ -44,16 +48,24 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void updateUser(User user, List<Long> roleIds) {
+        User existingUser = userRepository.getUserById(user.getId());
+        if (user.getPassword() != null && !user.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+        } else {
+            user.setPassword(existingUser.getPassword());
+        }
         if (roleIds != null && !roleIds.isEmpty()) {
             List<Role> roles = roleService.findRolesByIds(roleIds);
-            user.setRoles(new HashSet<>(roles)); // Привязываем сет ролей внутри метода слоя User
+            user.setRoles(new HashSet<>(roles));
+        } else {
+            user.setRoles(existingUser.getRoles());
         }
-        userRepository.update(user);
+        userRepository.save(user);
     }
     
     @Override
     @Transactional
     public void deleteUser(Long id) {
-        userRepository.delete(id);
+        userRepository.deleteById(id);
     }
 }
