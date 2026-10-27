@@ -1,13 +1,12 @@
 package ru.kata.spring.boot_security.demo.repositories;
 
-import org.springframework.data.jpa.repository.JpaRepository;
 import ru.kata.spring.boot_security.demo.models.User;
+import java.util.List;
 
-import java.util.Optional;
-
-public interface UserRepository extends JpaRepository<User, Long> {
-    User getUserById(Long id);
-    
-    // Возвращаем Optional<User>, чтобы работал orElseThrow
-    Optional<User> findByEmail(String email);
+public interface UserRepository {
+    List<User> findAll();
+    User findById(Long id);
+    User findByEmail(String email);
+    void save(User user);
+    void deleteById(Long id);
 }

@@ -31,7 +31,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public User getUserById(Long id) {
-        return userRepository.getUserById(id);
+        return userRepository.findById(id);
     }
     
     @Override
@@ -48,7 +48,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void updateUser(User user, List<Long> roleIds) {
-        User existingUser = userRepository.getUserById(user.getId());
+        User existingUser = userRepository.findById(user.getId());
         if (user.getPassword() != null && !user.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         } else {
